@@ -6,6 +6,7 @@ import fs = require('fs');
     fs.readFileSync('cred.json').toString()
   );
   const scrapper = new GithubScrapper(creds.username, creds.password);
+  await scrapper.start();
 
   console.log();
   let startPoint = null;
@@ -32,13 +33,13 @@ import fs = require('fs');
   let oldestYearText;
   if(startPoint === null || startPoint < 1) {
     try {
-      oldestYearText = await this.getOldestYear();
+      oldestYearText = await scrapper.getOldestYear();
       fs.writeFileSync('working/oldestYear.json', JSON.stringify({
         year: oldestYearText
       }));
     } catch (ex) {
       console.error('Failed to fetch oldest year', ex);
-      console.error('Resume with \`npm start --oldestYear\`');
+      console.error('Resume with \`npm start -- --oldestYear\`');
     }
   } else {
     const oldestYearRaw = fs.readFileSync('working/oldestYear.json').toString();
@@ -52,14 +53,14 @@ import fs = require('fs');
   let repoNames;
   if(startPoint === null || startPoint < 2) {
     try {
-      repoNames = await this.getAllRepos(oldestYearText, currYear, currMonth);
+      repoNames = await scrapper.getAllRepos(oldestYearText, currYear, currMonth, 'working/repos.json');
       fs.writeFileSync('working/repos.json', JSON.stringify(repoNames));
     } catch (ex) {
       console.error('Failed to collect all repos', ex);
-      console.error('Resume with \`npm start --getRepos\`');
+      console.error('Resume with \`npm start -- --getRepos\`');
     }
   } else {
-    repoNames = scrapper.getRepoCache();
+    repoNames = scrapper.getRepoCache('working/repos.json');
   }
 
   const repoSet = new Set<string>();
@@ -72,11 +73,11 @@ import fs = require('fs');
   const repos: Array<string> = [...repoSet];
 
   try {
-    const repoStats = await this.statRepos(repos);
-    fs.writeFileSync('working/stats.json', JSON.stringify(repoStats));
+    const repoStats = await scrapper.statRepos(repos, 'working/repos.json');
+    fs.writeFileSync('repoStats.json', JSON.stringify(repoStats));
   } catch(ex) {
     console.error('Failed to stat all repos', ex);
-    console.error('Resume with \`npm start --statRepos\`');
+    console.error('Resume with \`npm start -- --statRepos\`');
   }
 
   await scrapper.stop();

@@ -44,15 +44,11 @@ export class GithubScrapper {
     async start() {
         this.browser = await puppeteer.launch({
             headless: false,
-    
+            
         });
         this.page = await this.browser.newPage();
         await this.page.setViewport({width: 1400, height: 1000});
     }
-
-    // await this.loadCookies();
-    
-    // const repoNames = this.getRepoCache();
 
     async stop() {
         await this.browser.close();
@@ -98,12 +94,20 @@ export class GithubScrapper {
         return parseInt(oldestText);
     };
 
-    async getAllRepos(startYear: number, endYear: number, endMonth: number): Promise<object> {
-        const allRepos = {};
+    async getAllRepos(startYear: number, endYear: number, endMonth: number, cacheLocation: string): Promise<object> {
+        let allRepos = {};
     
+        if(fs.existsSync(cacheLocation)) {
+            allRepos = JSON.parse(fs.readFileSync(cacheLocation).toString());
+        }
+
         for (let year = startYear; year <= endYear; year++) {
             const finalMonth = (year === endYear ? endMonth : 12);
             for (let month = 1; month <= finalMonth; month++) {
+                if(allRepos[`${year.toString()}-${month}`] !== undefined) {
+                    continue;
+                }
+
                 const monthPad = month.toString().padStart(2, '0');
                 await this.page.goto(`https://github.com/${this.username}?tab=overview&from=${year}-${monthPad}-01&to=${year}-${monthPad}-31`);
         
@@ -118,19 +122,24 @@ export class GithubScrapper {
                 const commitRepos = await this.page.mainFrame().$x('/html/body/div[4]/main/div/div[3]/div[3]/div[2]/div/div[1]/div[2]/div/div/div[1]/ul/li/div[1]/a[1]');
                 const repos = await asyncMap(commitRepos, async (repo) => await this.getText(repo));
                 allRepos[`${year.toString()}-${month}`] = repos;
+                fs.writeFileSync(cacheLocation, JSON.stringify(allRepos));
             }
-            fs.writeFileSync('repos.json', JSON.stringify(allRepos));
         }
     
         return allRepos;
     }
 
-    getRepoCache(): object {
-        return JSON.parse(fs.readFileSync('repos.json').toString());
+    getRepoCache(cacheLocation: string): object {
+        return JSON.parse(fs.readFileSync(cacheLocation).toString());
     }
 
-    async statRepos(repos: Array<string>): Promise<object> {
-        const repoStats = {};
+    async statRepos(repos: Array<string>, cacheLocation: string): Promise<object> {
+        let repoStats = {};
+        if(fs.existsSync(cacheLocation)) {
+            repoStats = JSON.parse(fs.readFileSync(cacheLocation).toString());
+        }
+        
+        repos = repos.filter(repo => repoStats[repo] === undefined);
 
         await asyncForEach(repos, async (repo) => {
             const stats = await this.getRepoLineStats(repo);
@@ -139,6 +148,7 @@ export class GithubScrapper {
                 raw: stats,
                 langDiv: langStats
             };
+            fs.writeFileSync(cacheLocation, JSON.stringify(repoStats));
         });
 
         return repoStats;
