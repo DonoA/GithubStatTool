@@ -19,6 +19,7 @@ import fs = require('fs');
     ].indexOf(startName);
   }
 
+  console.log('Starting login task, session will be written to working/cookies.json!');
   if(startPoint === null) {
     try {
       await scrapper.login();
@@ -30,6 +31,7 @@ import fs = require('fs');
     await scrapper.loadCookies('working/cookies.json');
   }
 
+  console.log('Starting get oldest year task: resume with \`npm start -- --oldestYear\`');
   let oldestYearText;
   if(startPoint === null || startPoint < 1) {
     try {
@@ -50,6 +52,7 @@ import fs = require('fs');
   const currMonth = dateObj.getUTCMonth() + 1;
   const currYear = dateObj.getUTCFullYear();
 
+  console.log('Starting repo list task: resume with \`npm start -- --getRepos\`');
   let repoNames;
   if(startPoint === null || startPoint < 2) {
     try {
@@ -72,6 +75,7 @@ import fs = require('fs');
 
   const repos: Array<string> = [...repoSet];
 
+  console.log('Starting repo stat task: resume with \`npm start -- --statRepos\`');
   try {
     const repoStats = await scrapper.statRepos(repos, 'working/repos.json');
     fs.writeFileSync('repoStats.json', JSON.stringify(repoStats));
@@ -82,4 +86,7 @@ import fs = require('fs');
 
   await scrapper.stop();
 
+  fs.unlinkSync('working/cookies.json');
+
+  console.log('Tool finished, output in repoStats.json')
 })();
