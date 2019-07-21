@@ -43,7 +43,7 @@ export class GithubScrapper {
 
     async start() {
         this.browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
             
         });
         this.page = await this.browser.newPage();
@@ -156,7 +156,15 @@ export class GithubScrapper {
 
     async getRepoLineStats(repo: string): Promise<RepoLineStats> {
         await this.page.goto(`https://github.com/${repo}/graphs/contributors`);
-        await this.page.waitForXPath('//*[@id="contributors"]/ol/li/span/h3/span[1]');
+        try {
+            await this.page.waitForXPath('//*[@id="contributors"]/ol/li/span/h3/span[1]');
+        } catch(ex) {
+            const errorElt = (await this.page.mainFrame().$x('/html/body/div[4]/div/main/div[2]/div[1]/div/div[2]/div[2]/div[2]/div[2]/p'));
+            if(errorElt.length !== 0) {
+                console.error('Github rate limit reached, try starting again in 10 min');
+            }
+            throw ex;
+        }
         const statBoxArr = (await this.page.mainFrame().$x(`//a[@href=\'/${this.username}\' and @class=\'text-normal\']/..`));
         if(statBoxArr.length === 0) {
             console.log('failed to stat', repo);

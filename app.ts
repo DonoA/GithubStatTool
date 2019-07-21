@@ -1,5 +1,6 @@
 import { GithubScrapper } from './lib/chrome';
 import fs = require('fs');
+import sys = require('stream');
 
 (async () => {
   const creds = JSON.parse(
@@ -19,29 +20,33 @@ import fs = require('fs');
     ].indexOf(startName);
   }
 
-  console.log('Starting login task, session will be written to working/cookies.json!');
   if(startPoint === null) {
+    console.log('Starting login task, session will be written to working/cookies.json!');
     try {
       await scrapper.login();
       await scrapper.dumpCookies('working/cookies.json');
     } catch (ex) {
-      console.error('Failed to login', ex);
+      console.error('Failed to login');
+      console.error(ex);
+      process.exit(1);
     }
   } else {
     await scrapper.loadCookies('working/cookies.json');
   }
 
-  console.log('Starting get oldest year task: resume with \`npm start -- --oldestYear\`');
   let oldestYearText;
   if(startPoint === null || startPoint < 1) {
+    console.log('Starting get oldest year task: resume with \`npm start -- --oldestYear\`');
     try {
       oldestYearText = await scrapper.getOldestYear();
       fs.writeFileSync('working/oldestYear.json', JSON.stringify({
         year: oldestYearText
       }));
     } catch (ex) {
-      console.error('Failed to fetch oldest year', ex);
+      console.error('Failed to fetch oldest year');
+      console.error(ex);
       console.error('Resume with \`npm start -- --oldestYear\`');
+      process.exit(1);
     }
   } else {
     const oldestYearRaw = fs.readFileSync('working/oldestYear.json').toString();
@@ -52,15 +57,17 @@ import fs = require('fs');
   const currMonth = dateObj.getUTCMonth() + 1;
   const currYear = dateObj.getUTCFullYear();
 
-  console.log('Starting repo list task: resume with \`npm start -- --getRepos\`');
   let repoNames;
   if(startPoint === null || startPoint < 2) {
+    console.log('Starting repo list task: resume with \`npm start -- --getRepos\`');
     try {
       repoNames = await scrapper.getAllRepos(oldestYearText, currYear, currMonth, 'working/repos.json');
       fs.writeFileSync('working/repos.json', JSON.stringify(repoNames));
     } catch (ex) {
-      console.error('Failed to collect all repos', ex);
+      console.error('Failed to collect all repos');
+      console.error(ex);
       console.error('Resume with \`npm start -- --getRepos\`');
+      process.exit(1);
     }
   } else {
     repoNames = scrapper.getRepoCache('working/repos.json');
@@ -77,11 +84,13 @@ import fs = require('fs');
 
   console.log('Starting repo stat task: resume with \`npm start -- --statRepos\`');
   try {
-    const repoStats = await scrapper.statRepos(repos, 'working/repos.json');
+    const repoStats = await scrapper.statRepos(repos, 'working/repoStats.json');
     fs.writeFileSync('repoStats.json', JSON.stringify(repoStats));
   } catch(ex) {
-    console.error('Failed to stat all repos', ex);
+    console.error('Failed to stat all repos')
+    console.error(ex);
     console.error('Resume with \`npm start -- --statRepos\`');
+    process.exit(1);
   }
 
   await scrapper.stop();
