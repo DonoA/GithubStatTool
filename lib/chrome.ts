@@ -184,12 +184,12 @@ export class GithubScrapper {
 
     async getRepoLangStats(repo: string): Promise<object> {
         await this.page.goto(`https://github.com/${repo}`);
-        const langBar = (await this.page.mainFrame().$x('/html/body/div[4]/div/main/div[2]/div[1]/button/span'));
+        const langBar = (await this.page.mainFrame().$x('/html/body/div[4]/div/main/div[2]/div[1]/details/div/ol/li'));
         const langStats = {};
         await asyncForEach(langBar, async (lang) => {
-            const stat: string =  await this.page.evaluate(element => element.getAttribute('aria-label'), lang);
-            const [name, val] = stat.split(' ');
-            langStats[name] = val;
+            const stat: string =  await this.getText(lang);
+            const [name, val] = stat.split('\n');
+            langStats[name.trim()] = val.trim();
         });
         return langStats;
     }
