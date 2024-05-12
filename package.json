@@ -7,12 +7,10 @@
     "gitlab": "npx ts-node gitlab/scrape_gitlab.ts"
   },
   "dependencies": {
-    "puppeteer": "^1.18.1",
     "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/node": "^12.6.8",
-    "@types/puppeteer": "^1.12.4",
     "typescript": "^3.5.3"
   }
 }
