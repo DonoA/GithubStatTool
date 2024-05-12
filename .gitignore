@@ -1,6 +1,3 @@
-dist/
 node_modules/
-working/*
-!working/.gitkeep
-cred.json
+*.sample
 repoStats.json

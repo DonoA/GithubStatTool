@@ -3,10 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node build.js && node dist/app.js"
+    "github": "npx ts-node github/scrape_github.ts",
+    "gitlab": "npx ts-node gitlab/scrape_gitlab.ts"
   },
   "dependencies": {
-    "puppeteer": "^1.18.1"
+    "puppeteer": "^1.18.1",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/node": "^12.6.8",
