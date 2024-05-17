@@ -1,0 +1,25 @@
+export const repos = [
+    "git@github.com:DonoA/GithubStatTool.git"
+]
+
+export const languages = [
+    "c",
+    "s",
+    "h",
+    "java",
+    "ts",
+    "tsx",
+    "js",
+    "jsx",
+    "py",
+    "sh",
+    "kt",
+    "scala",
+    "tf",
+    "hcl"
+]
+
+export const author =[
+    'Donovan',
+    'DonoA'
+]
