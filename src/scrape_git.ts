@@ -121,4 +121,6 @@ function filterContributions(contributions: Contributions, languages: string[]):
     console.log(filteredContributions);
     const totalCommits = Object.values(filteredContributions).reduce((acc, val) => acc + val.commits, 0);
     console.log("Total commits:", totalCommits);
+    const totalLines = Object.values(filteredContributions).reduce((acc, val) => acc + val.added, 0);
+    console.log("Total lines:", totalLines);
 })();

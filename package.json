@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "github": "npx ts-node github/scrape_github.ts",
-    "gitlab": "npx ts-node gitlab/scrape_gitlab.ts"
+    "scrape": "npx ts-node src/scrape_git.ts"
   },
   "dependencies": {
     "ts-node": "^10.9.2"
