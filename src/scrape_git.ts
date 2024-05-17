@@ -52,7 +52,7 @@ async function scanRepo(repo: string): Promise<Contributions> {
 
     for (const commit of commitLog) {
         const [hash, author] = commit.split(' ');
-        if (author !== 'Donovan' && author !== 'doallen') {
+        if (config.author.includes(author)) {
             continue;
         }
         
